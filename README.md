@@ -10,8 +10,8 @@ $ npm install
 # Testing
 
 The easiest way to test this is to setup your own Slack account, configure the bot (per Slack's docs),
-and update the API key in the source with the necessary one for your Slack account. You can
-then run it locally via `npm run start`.
+and update the API key in the source (see `SLACK_TOKEN` near the top) with the necessary one
+for your Slack account. You can then run it locally via `npm run start`.
 
 # Deployment
 

@@ -8,6 +8,7 @@ const SLACK_TOKEN = ''
 
 ///////////// Requires
 
+const Botkit = require('botkit');
 const express = require('express')
 const schedule = require('node-schedule')
 
@@ -35,8 +36,6 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
 });
 
 ///////////// Real cod
-
-const Botkit = require('botkit');
 
 const controller = Botkit.slackbot({
     debug: false

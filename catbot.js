@@ -162,6 +162,9 @@ const configureBot = (coffeeChannelId) => {
 };
 
 bot.api.channels.list({}, function(err, resp) {
+    if (err) {
+        console.error(err);
+    }
     const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
 
     if (!coffeeChannel) {

@@ -47,92 +47,108 @@ const coffeeData = {
     userIdNeedingCoffee: null
 }
 
+///////////// Promisified things
+
+const pbot = {
+    api: {
+        channels: {
+            list: promisify(bot.api.channels.list)
+        },
+        chat: {
+            postMessage: promisify(bot.api.chat.postMessage)
+        },
+        im: {
+            list: promisify(bot.api.im.list)
+        },
+        users: {
+            info: promisify(bot.api.users.info)
+        }
+    }
+}
+
 ///////////// Real cod
 
-const processCoffeeMessage = (bot, message, coffeeChannelId) => {
+const processCoffeeMessage = async (bot, message, coffeeChannelId) => {
 
-    messageUserId = message.user;
-    if (coffeeData.userIdNeedingCoffee == messageUserId) {
+    // message.user is actually the user's ID, not a user object
+
+    if (coffeeData.userIdNeedingCoffee == message.user) {
         bot.reply(message, "I beg thee, please give thy steed time! You are in the queue.");
         return;
     }
 
     if (coffeeData.userIdNeedingCoffee !== null) {
+        // A lot of this can be parallelized, but for easy of dev and error propogation ease, just leave it sync
+        // Also slack doesn't like lots of fast API calls.
+        
         const otherUserId = coffeeData.userIdNeedingCoffee;
-        bot.api.users.info({ user: otherUserId }, (err, otherUserResp) => {
 
-            bot.reply(
-                message,
-                `Caffeine be upon you. You are paired with @${otherUserResp.user.name}! Go and burst forth enlightening conversation.`
-            );
+        // Get info about the other user
+        const otherUserResp = await pbot.api.users.info({ user: otherUserId });
 
-            bot.api.im.list({}, (err, resp) => {
-                const otherUserIm = resp.ims.find(im => im.user == otherUserId);
+        ////////////////
+        // Message the current user
+        bot.reply(
+            message,
+            `Caffeine be upon you. You are paired with @${otherUserResp.user.name}! Go and burst forth enlightening conversation.`
+        );
 
-                bot.api.users.info({ user: message.user }, (err, thisUserResp) => {
-                    bot.api.chat.postMessage(
-                        {
-                            as_user: true,
-                            channel: otherUserIm.id,
-                            text: `Caffeine be upon you. You are paired with @${thisUserResp.user.name}! Go and burst forth enlightening conversation.`
-                        },
-                        (err, resp) => {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            }
-                        }
-                    );
+        ////////////////
+        // Message the other user
+        
+        // Get Catbot's IM with the other user
+        const imListing = await pbot.api.im.list({});
+        const otherUserIm = imListing.ims.find(im => im.user == otherUserId);
 
-                    bot.api.chat.postMessage(
-                        {
-                            as_user: true,
-                            channel: coffeeChannelId,
-                            text: `@${otherUserResp.user.name} and @${thisUserResp.user.name} are getting coffee together!`
-                        },
-                        (err, resp) => {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            }
-                        }
-                    );
-                });
-            });
+        // Get info about the current user
+        const thisUserResp = await pbot.api.users.info({ user: message.user })
 
-            coffeeData.userIdNeedingCoffee = null;
-            console.log('Cleared the list of users needing pairing');
+        await pbot.api.chat.postMessage(
+            {
+                as_user: true,
+                channel: otherUserIm.id,
+                text: `Caffeine be upon you. You are paired with @${thisUserResp.user.name}! Go and burst forth enlightening conversation.`
+            },
+        );
 
-        });
+        await bot.api.chat.postMessage(
+            {
+                as_user: true,
+                channel: coffeeChannelId,
+                text: `@${otherUserResp.user.name} and @${thisUserResp.user.name} are getting coffee together!`
+            },
+        );
+
+        coffeeData.userIdNeedingCoffee = null;
+        console.log('Cleared the list of users needing pairing');
+
         return;
     }
 
-    coffeeData.userIdNeedingCoffee = messageUserId;
+    coffeeData.userIdNeedingCoffee = message.user;
 
     bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
 
-    bot.api.chat.postMessage(
+    await pbot.api.chat.postMessage(
         {
             as_user: true,
             channel: coffeeChannelId,
             text: `Someone needs coffee! Who is up to the task?`
-        },
-        (err, resp) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
         }
     );
 };
 
-const configureBot = async (coffeeChannelId) => {
+const configureBot = (coffeeChannelId) => {
 
     controller.hears(
         ['coffee'],
         'direct_message,direct_mention,mention',
-        (bot, message) => {
-            processCoffeeMessage(bot, message, coffeeChannelId);
+        async (bot, message) => {
+            try {
+                await processCoffeeMessage(bot, message, coffeeChannelId);
+            } catch (err) {
+                console.error(err);
+            }
         }
     );
 
@@ -146,8 +162,7 @@ const configureBot = async (coffeeChannelId) => {
 };
 
 const main = async () => {
-    const listChannels = promisify(bot.api.channels.list)
-    const resp = await listChannels({});
+    const resp = await pbot.api.channels.list({});
 
     const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
 
@@ -158,7 +173,7 @@ const main = async () => {
     console.log("Found the coffee channel!");
     console.log(coffeeChannel);
 
-    await configureBot(coffeeChannel.id);
+    configureBot(coffeeChannel.id);
 }
 
 ///////////// Run all the cods

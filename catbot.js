@@ -32,6 +32,7 @@ app.listen(app.get('port'), function() {
 const EACH_DAY_AT_MIDNIGHT = '0 0 * * *'
 
 schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
+    // This will reset any users wanting coffee and also do randomization of free coffee at some point
     console.log('poops');
 });
 

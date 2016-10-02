@@ -43,101 +43,52 @@ const bot = controller.spawn({
     token: process.env.SLACK_TOKEN
 }).startRTM();
 
+const coffeeData = {
+    userIdNeedingCoffee: null
+}
+
 ///////////// Real cod
 
-const configureBot = (coffeeChannelId) => {
-    controller.hears(
-        ['coffee'],
-        'direct_message,direct_mention,mention',
-        (bot, message) => {
-            controller.storage.channels.get(coffeeChannelId, (err, channelStorage) => {
-                if (!channelStorage) {
-                    channelStorage = {
-                        id: coffeeChannelId,
-                        userIdsNeedingCoffee: new Set()
-                    };
-                }
+const processCoffeeMessage = (bot, message, coffeeChannelId) => {
 
-                if (channelStorage.userIdsNeedingCoffee.has(message.user)) {
-                    bot.reply(message, "I beg thee, please give thy steed time! You are in the queue.");
-                    return;
-                }
+    messageUserId = message.user;
+    if (coffeeData.userIdNeedingCoffee == messageUserId) {
+        bot.reply(message, "I beg thee, please give thy steed time! You are in the queue.");
+        return;
+    }
 
-                if (channelStorage.userIdsNeedingCoffee.size > 0) {
-                    const otherUserId = channelStorage.userIdsNeedingCoffee.values().next().value;
-                    bot.api.users.info({ user: otherUserId }, (err, otherUserResp) => {
+    if (coffeeData.userIdNeedingCoffee !== null) {
+        const otherUserId = coffeeData.userIdNeedingCoffee;
+        bot.api.users.info({ user: otherUserId }, (err, otherUserResp) => {
 
-                        bot.reply(
-                            message,
-                            `Caffeine be upon you. You are paired with @${otherUserResp.user.name}! Go and burst forth enlightening conversation.`
-                        );
+            bot.reply(
+                message,
+                `Caffeine be upon you. You are paired with @${otherUserResp.user.name}! Go and burst forth enlightening conversation.`
+            );
 
-                        bot.api.im.list({}, (err, resp) => {
-                            const otherUserIm = resp.ims.find(im => im.user == otherUserId);
+            bot.api.im.list({}, (err, resp) => {
+                const otherUserIm = resp.ims.find(im => im.user == otherUserId);
 
-                            bot.api.users.info({ user: message.user }, (err, thisUserResp) => {
-                                bot.api.chat.postMessage(
-                                    {
-                                        as_user: true,
-                                        channel: otherUserIm.id,
-                                        text: `Caffeine be upon you. You are paired with @${thisUserResp.user.name}! Go and burst forth enlightening conversation.`
-                                    },
-                                    (err, resp) => {
-                                        if (err) {
-                                            console.error(err);
-                                            return;
-                                        }
-                                    }
-                                );
-
-                                bot.api.chat.postMessage(
-                                    {
-                                        as_user: true,
-                                        channel: coffeeChannelId,
-                                        text: `@${otherUserResp.user.name} and @${thisUserResp.user.name} are getting coffee together!`
-                                    },
-                                    (err, resp) => {
-                                        if (err) {
-                                            console.error(err);
-                                            return;
-                                        }
-                                    }
-                                );
-                            });
-                        });
-
-                        channelStorage.userIdsNeedingCoffee = new Set();
-                        controller.storage.channels.save(channelStorage, (err, id) => {
+                bot.api.users.info({ user: message.user }, (err, thisUserResp) => {
+                    bot.api.chat.postMessage(
+                        {
+                            as_user: true,
+                            channel: otherUserIm.id,
+                            text: `Caffeine be upon you. You are paired with @${thisUserResp.user.name}! Go and burst forth enlightening conversation.`
+                        },
+                        (err, resp) => {
                             if (err) {
                                 console.error(err);
                                 return;
                             }
-
-                            console.log('Cleared the list of users needing pairing');
-                        });
-
-                    });
-                    return;
-                }
-
-                channelStorage.userIdsNeedingCoffee.add(message.user);
-
-                console.log('Current channel storage');
-                console.log(channelStorage);
-
-                controller.storage.channels.save(channelStorage, (err, id) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    }
-
-                    bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
+                        }
+                    );
 
                     bot.api.chat.postMessage(
                         {
                             as_user: true,
                             channel: coffeeChannelId,
-                            text: `Someone needs coffee! Who is up to the task?`
+                            text: `@${otherUserResp.user.name} and @${thisUserResp.user.name} are getting coffee together!`
                         },
                         (err, resp) => {
                             if (err) {
@@ -148,6 +99,40 @@ const configureBot = (coffeeChannelId) => {
                     );
                 });
             });
+
+            coffeeData.userIdNeedingCoffee = null;
+            console.log('Cleared the list of users needing pairing');
+
+        });
+        return;
+    }
+
+    coffeeData.userIdNeedingCoffee = messageUserId;
+
+    bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
+
+    bot.api.chat.postMessage(
+        {
+            as_user: true,
+            channel: coffeeChannelId,
+            text: `Someone needs coffee! Who is up to the task?`
+        },
+        (err, resp) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+        }
+    );
+};
+
+const configureBot = async (coffeeChannelId) => {
+
+    controller.hears(
+        ['coffee'],
+        'direct_message,direct_mention,mention',
+        (bot, message) => {
+            processCoffeeMessage(bot, message, coffeeChannelId);
         }
     );
 
@@ -162,7 +147,6 @@ const configureBot = (coffeeChannelId) => {
 
 const main = async () => {
     const listChannels = promisify(bot.api.channels.list)
-
     const resp = await listChannels({});
 
     const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
@@ -174,7 +158,7 @@ const main = async () => {
     console.log("Found the coffee channel!");
     console.log(coffeeChannel);
 
-    configureBot(coffeeChannel.id);
+    await configureBot(coffeeChannel.id);
 }
 
 ///////////// Run all the cods

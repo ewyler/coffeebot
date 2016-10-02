@@ -76,7 +76,6 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     // coffeeManager.reset();
 });
 
-
 controller.hears(
     ['coffee'],
     'direct_message,direct_mention,mention',

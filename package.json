@@ -13,7 +13,7 @@
     "promisify-node": "0.4.0"
   },
   "scripts": {
-    "build": "babel */*.js -d lib --presets es2017",
+    "build": "babel *.js */*.js -d lib --presets es2017",
     "local": "heroku ps:scale web=0 --app desolate-everglades-35136; heroku local",
     "start": "npm run build; node lib/catbot.js",
     "deploy-production": "git push -f production master; heroku logs --remote production --tail",

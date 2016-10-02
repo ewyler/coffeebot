@@ -35,16 +35,6 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     console.log('poops');
 });
 
-///////////// Global setup crap
-
-const controller = Botkit.slackbot({
-    debug: false
-});
-
-const coffeeData = {
-    userIdNeedingCoffee: null
-}
-
 ///////////// Promisified bot things
 
 class PromiseBot {
@@ -187,6 +177,10 @@ class UserNeedsCoffeeState {
         return new EmptyCoffeeState(this.coffeeChannelId, this.bot);
     }
 }
+
+const controller = Botkit.slackbot({
+    debug: false
+});
 
 const bot = controller.spawn({
     token: process.env.SLACK_TOKEN

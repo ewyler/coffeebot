@@ -19,6 +19,6 @@
     "deploy-production": "git push -f production master; heroku logs --remote production --tail",
     "deploy-staging": "heroku ps:scale web=1 --app desolate-everglades-35136; git push -f staging master; heroku logs --remote staging --tail"
   },
-  "author": "Catalant",
+  "author": "Eric Wyler <ewyler@gmail.com>",
   "license": "ISC"
 }

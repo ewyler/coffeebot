@@ -1,5 +1,5 @@
 # ct-catbot
-Catbot slackbot
+Catbot bot for Slack
 
 # Installation
 
@@ -7,11 +7,15 @@ Catbot slackbot
 $ npm install
 ```
 
-# Testing
+# Running
 
-The easiest way to test this is to setup your own Slack account, configure the bot (per Slack's docs),
-and update the API key in the source (see `SLACK_TOKEN` near the top) with the necessary one
-for your Slack account. You can then run it locally via `npm run start`.
+The easiest way to test this is to:
+1. Setup your own Slack account
+1. Configure the bot (per Slack's docs) on that Slack account
+1. Set the `SLACK_TOKEN` environment variable to your slack token
+1. `npm run start`
+
+TBD add heroku stuff.
 
 # Deployment
 

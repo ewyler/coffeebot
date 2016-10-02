@@ -4,13 +4,20 @@
   "description": "Catbot",
   "main": "catbot.js",
   "dependencies": {
+    "babel-cli": "6.16.0",
+    "babel-polyfill": "6.16.0",
+    "babel-preset-es2017": "6.16.0",
     "botkit": "0.2.2",
     "express": "4.14.0",
-    "node-schedule": "1.1.1"
+    "node-schedule": "1.1.1",
+    "promisify-node": "0.4.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "start": "node catbot.js"
+    "build": "babel catbot.js -d lib --presets es2017",
+    "local": "heroku ps:scale web=0 --app desolate-everglades-35136; heroku local",
+    "start": "babel catbot.js -d lib --presets es2017; node lib/catbot.js",
+    "deploy-production": "git push -f production master; heroku logs --remote production --tail",
+    "deploy-staging": "heroku ps:scale web=1 --app desolate-everglades-35136; git push -f staging master; heroku logs --remote staging --tail"
   },
   "author": "Catalant",
   "license": "ISC"

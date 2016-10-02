@@ -1,18 +1,16 @@
-// Bullshit to make this work because Procfile only works with web roles, so there
-// is no way to specify a fucking non-web role
-
-///////////// Manual config
-
-// The token for the bot to connect to Slack
-const SLACK_TOKEN = ''
-
 ///////////// Requires
+
+require('babel-polyfill');
 
 const Botkit = require('botkit');
 const express = require('express')
 const schedule = require('node-schedule')
+const promisify = require('promisify-node')
 
 ///////////// App setup
+// Bullshit way to make this work because Procfile only works with web roles,
+// so there is no way to specify a non-web role. As such, we have to create
+// something to listen to port 5000 or else heroku will kill the app after 60 seconds.
 
 const app = express()
 
@@ -35,15 +33,17 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     console.log('poops');
 });
 
-///////////// Real cod
+///////////// Global setup crap
 
 const controller = Botkit.slackbot({
     debug: false
 });
 
 const bot = controller.spawn({
-    token: SLACK_TOKEN
+    token: process.env.SLACK_TOKEN
 }).startRTM();
+
+///////////// Real cod
 
 const configureBot = (coffeeChannelId) => {
     controller.hears(
@@ -160,20 +160,24 @@ const configureBot = (coffeeChannelId) => {
     );
 };
 
-bot.api.channels.list({}, function(err, resp) {
-    if (err) {
-        console.error(err);
-    }
+const main = async () => {
+    const listChannels = promisify(bot.api.channels.list)
+
+    const resp = await listChannels({});
+
     const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
 
     if (!coffeeChannel) {
-        console.error("I can't work without a coffee channel!");
-        process.exit();
+        throw "I can't work without a coffee channel!";
     }
 
     console.log("Found the coffee channel!");
     console.log(coffeeChannel);
 
     configureBot(coffeeChannel.id);
-});
+}
+
+///////////// Run all the cods
+
+main().catch(err => console.error(err));
 

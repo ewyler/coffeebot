@@ -2,6 +2,8 @@
 
 require('babel-polyfill');
 
+const FREE_BOOKEND = ':coffee: :coffee: :coffee: :coffee: :coffee:'
+
 // Move this to some common core/util area
 const once = (target, meth, pd) => {
     const $shadow = Symbol();
@@ -55,36 +57,64 @@ module.exports = class {
 
     async reset() {
         const coffeeChannelId = await this._getCoffeeChannelId();
-        this._currentState = new EmptyCoffeeState(coffeeChannelId, this._bot);
+        this._currentState = new EmptyCoffeeState(coffeeChannelId, this._bot, new FreeCoffeeCountdown());
     }
 };
 
+class FreeCoffeeCountdown {
+    constructor() {
+        // Always between 0 and 4
+        this._freeCoffeeCountdown = Math.floor(Math.random() / 0.2);
+    }
+
+    pickMessage(defaultMessage, freeMessage) {
+        return this._freeCoffeeCountdown == 0
+            ? [FREE_BOOKEND, freeMessage, FREE_BOOKEND].join(' ')
+            : defaultMessage;
+    }
+
+    recordCoffeeMatch() {
+        this._freeCoffeeCountdown--;
+    }
+}
+
 class EmptyCoffeeState {
-    constructor(coffeeChannelId, bot) {
+    constructor(coffeeChannelId, bot, freeCoffeeCountdown) {
         this._coffeeChannelId = coffeeChannelId;
         this._bot = bot;
+        this._freeCoffeeCountdown = freeCoffeeCountdown;
     }
 
     async processCoffeeMessage(message) {
-        this._bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
+        this._bot.reply(
+            message,
+            this._freeCoffeeCountdown.pickMessage(
+                'I will send coffee on a great steed. You are now in the queue.',
+                `Congrats, you're getting free coffee! Now just to find someone else...`
+            )
+        );
 
         await this._bot.api.chat.postMessage(
             {
                 as_user: true,
                 channel: this._coffeeChannelId,
-                text: `Someone needs coffee! Who is up to the task?`
+                text: this._freeCoffeeCountdown.pickMessage(
+                    `Someone needs coffee! Who is up to the task?`,
+                    `Someone needs coffee and the next pair is FREE! Who likes free coffee?`
+                )
             }
         );
 
-        return new UserNeedsCoffeeState(this._coffeeChannelId, this._bot, message.user);
+        return new UserNeedsCoffeeState(this._coffeeChannelId, this._bot, message.user, this._freeCoffeeCountdown);
     }
 }
 
 class UserNeedsCoffeeState {
-    constructor(coffeeChannelId, bot, userId) {
+    constructor(coffeeChannelId, bot, userId, freeCoffeeCountdown) {
         this._coffeeChannelId = coffeeChannelId;
         this._bot = bot;
         this._originalUserId = userId;
+        this._freeCoffeeCountdown = freeCoffeeCountdown;
     }
 
     async processCoffeeMessage(message) {
@@ -103,7 +133,12 @@ class UserNeedsCoffeeState {
         // Message the recently requesting user
         this._bot.reply(
             message,
-            `Caffeine be upon you. You are paired with @${originalUserResp.user.name}! Go and burst forth enlightening conversation.`
+            this._freeCoffeeCountdown.pickMessage(
+                `Caffeine be upon you. You are paired with @${originalUserResp.user.name}!` +
+                    ` Go and burst forth enlightening conversation.`,
+                `You are paired with @${originalUserResp.user.name}!`
+                    + ` Grab the free coffee card from John Nylen's desk.`
+            )
         );
 
         ////////////////
@@ -120,7 +155,12 @@ class UserNeedsCoffeeState {
             {
                 as_user: true,
                 channel: originalUserIm.id,
-                text: `Caffeine be upon you. You are paired with @${latestUserResp.user.name}! Go and burst forth enlightening conversation.`
+                text: this._freeCoffeeCountdown.pickMessage(
+                    `Caffeine be upon you. You are paired with @${latestUserResp.user.name}!` +
+                        `Go and burst forth enlightening conversation.`,
+                    `You are paired with @${latestUserResp.user.name}!`
+                        + ` Grab the free coffee card from John Nylen's desk.`
+                )
             },
         );
 
@@ -128,10 +168,16 @@ class UserNeedsCoffeeState {
             {
                 as_user: true,
                 channel: this._coffeeChannelId,
-                text: `@${originalUserResp.user.name} and @${latestUserResp.user.name} are getting coffee together!`
+                text: this._freeCoffeeCountdown.pickMessage(
+                    `@${originalUserResp.user.name} and @${latestUserResp.user.name} are getting coffee together!`,
+                    `@${originalUserResp.user.name} and `
+                        + ` @${latestUserResp.user.name} are getting FREE coffee together!`
+                        + ` Better luck next time, eh?`
+                )
             },
         );
 
-        return new EmptyCoffeeState(this._coffeeChannelId, this._bot);
+        this._freeCoffeeCountdown.recordCoffeeMatch();
+        return new EmptyCoffeeState(this._coffeeChannelId, this._bot, this._freeCoffeeCountdown);
     }
 }

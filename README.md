@@ -10,6 +10,7 @@ $ npm install
 # Running
 
 The easiest way to test this is to:
+
 1. Setup your own Slack account
 1. Configure the bot (per Slack's docs) on that Slack account
 1. Set the `SLACK_TOKEN` environment variable to your slack token

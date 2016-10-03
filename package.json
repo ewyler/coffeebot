@@ -5,6 +5,8 @@
   "main": "catbot.js",
   "dependencies": {
     "babel-cli": "6.16.0",
+    "babel-plugin-transform-decorators-legacy": "1.3.4",
+    "babel-plugin-transform-function-bind": "6.8.0",
     "babel-polyfill": "6.16.0",
     "babel-preset-es2017": "6.16.0",
     "botkit": "0.2.2",
@@ -13,7 +15,7 @@
     "promisify-node": "0.4.0"
   },
   "scripts": {
-    "build": "babel *.js */*.js -d lib --presets es2017",
+    "build": "babel *.js */*.js -d lib",
     "local": "heroku ps:scale web=0 --app desolate-everglades-35136; heroku local",
     "start": "npm run build; node lib/catbot.js",
     "deploy-production": "git push -f production master; heroku logs --remote production --tail",

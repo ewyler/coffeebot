@@ -1,0 +1,9 @@
+{
+    "plugins": [
+        "transform-decorators-legacy",
+        "transform-function-bind"
+    ],
+    "presets": [
+        "es2017"
+    ]
+}

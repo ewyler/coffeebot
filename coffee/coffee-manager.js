@@ -2,28 +2,47 @@
 
 require('babel-polyfill');
 
+// Move this to some common core/util area
+const once = (target, meth, pd) => {
+    const $shadow = Symbol();
+
+    const originalValue = pd.value;
+
+    return {
+        value: function() {
+            this[$shadow] = $shadow in this ? this[$shadow] : this::originalValue();
+            return this[$shadow];
+        }
+    };
+};
+
 module.exports = class {
     constructor(bot) {
         this.bot = bot;
         this.currentState = null;
 
         // Could do this lazily but we may as well do it right away.
-        this.getCurrentState().catch(err => console.error(err));
+        this.reset().catch(err => console.error(err));
+    }
+
+    @once
+    async getCoffeeChannelId() {
+        const resp = await this.bot.api.channels.list({});
+
+        const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
+        if (!coffeeChannel) {
+            throw "I can't work without a coffee channel!";
+        }
+
+        console.log("Found the coffee channel!");
+        console.log(coffeeChannel);
+
+        return coffeeChannel.id
     }
 
     async getCurrentState() {
         if (this.currentState === null) {
-            const resp = await this.bot.api.channels.list({});
-
-            const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
-            if (!coffeeChannel) {
-                throw "I can't work without a coffee channel!";
-            }
-
-            console.log("Found the coffee channel!");
-            console.log(coffeeChannel);
-
-            this.currentState = new EmptyCoffeeState(coffeeChannel.id, this.bot);
+            await this.reset();
         }
 
         return this.currentState;
@@ -32,6 +51,11 @@ module.exports = class {
     async processCoffeeMessage(message) {
         const currentState = await this.getCurrentState();
         this.currentState = currentState.processCoffeeMessage(message);
+    }
+
+    async reset() {
+        const coffeeChannelId = await this.getCoffeeChannelId();
+        this.currentState = new EmptyCoffeeState(coffeeChannelId, this.bot);
     }
 };
 

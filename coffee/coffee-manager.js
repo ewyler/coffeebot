@@ -63,8 +63,8 @@ module.exports = class {
 
 class FreeCoffeeCountdown {
     constructor() {
-        // Always between 0 and 4
-        this._freeCoffeeCountdown = Math.floor(Math.random() / 0.2);
+        // Always between 0 and 2
+        this._freeCoffeeCountdown = Math.floor(Math.random() / 0.35);
     }
 
     pickMessage(defaultMessage, freeMessage) {

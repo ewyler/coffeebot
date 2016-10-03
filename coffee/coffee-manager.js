@@ -157,7 +157,7 @@ class UserNeedsCoffeeState {
                 channel: originalUserIm.id,
                 text: this._freeCoffeeCountdown.pickMessage(
                     `Caffeine be upon you. You are paired with @${latestUserResp.user.name}!` +
-                        `Go and burst forth enlightening conversation.`,
+                        ` Go and burst forth enlightening conversation.`,
                     `You are paired with @${latestUserResp.user.name}!`
                         + ` Grab the free coffee card from John Nylen's desk.`
                 )

@@ -18,16 +18,16 @@ const once = (target, meth, pd) => {
 
 module.exports = class {
     constructor(bot) {
-        this.bot = bot;
-        this.currentState = null;
+        this._bot = bot;
+        this._currentState = null;
 
         // Could do this lazily but we may as well do it right away.
         this.reset().catch(err => console.error(err));
     }
 
     @once
-    async getCoffeeChannelId() {
-        const resp = await this.bot.api.channels.list({});
+    async _getCoffeeChannelId() {
+        const resp = await this._bot.api.channels.list({});
 
         const coffeeChannel = resp.channels.find(channel => channel.name == 'coffee');
         if (!coffeeChannel) {
@@ -40,56 +40,56 @@ module.exports = class {
         return coffeeChannel.id
     }
 
-    async getCurrentState() {
-        if (this.currentState === null) {
+    async _getCurrentState() {
+        if (this._currentState === null) {
             await this.reset();
         }
 
-        return this.currentState;
+        return this._currentState;
     }
 
     async processCoffeeMessage(message) {
-        const currentState = await this.getCurrentState();
-        this.currentState = currentState.processCoffeeMessage(message);
+        await this._getCurrentState();
+        this._currentState = await this._currentState.processCoffeeMessage(message);
     }
 
     async reset() {
-        const coffeeChannelId = await this.getCoffeeChannelId();
-        this.currentState = new EmptyCoffeeState(coffeeChannelId, this.bot);
+        const coffeeChannelId = await this._getCoffeeChannelId();
+        this._currentState = new EmptyCoffeeState(coffeeChannelId, this._bot);
     }
 };
 
 class EmptyCoffeeState {
     constructor(coffeeChannelId, bot) {
-        this.coffeeChannelId = coffeeChannelId;
-        this.bot = bot;
+        this._coffeeChannelId = coffeeChannelId;
+        this._bot = bot;
     }
 
     async processCoffeeMessage(message) {
-        this.bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
+        this._bot.reply(message, 'I will send coffee on a great steed. You are now in the queue.');
 
-        await this.bot.api.chat.postMessage(
+        await this._bot.api.chat.postMessage(
             {
                 as_user: true,
-                channel: this.coffeeChannelId,
+                channel: this._coffeeChannelId,
                 text: `Someone needs coffee! Who is up to the task?`
             }
         );
 
-        return new UserNeedsCoffeeState(this.coffeeChannelId, this.bot, message.user);
+        return new UserNeedsCoffeeState(this._coffeeChannelId, this._bot, message.user);
     }
 }
 
 class UserNeedsCoffeeState {
     constructor(coffeeChannelId, bot, userId) {
-        this.coffeeChannelId = coffeeChannelId;
-        this.bot = bot;
-        this.originalUserId = userId;
+        this._coffeeChannelId = coffeeChannelId;
+        this._bot = bot;
+        this._originalUserId = userId;
     }
 
     async processCoffeeMessage(message) {
-        if (this.originalUserId == message.user) {
-            this.bot.reply(message, "I beg thee, please give thy steed time! You are in the queue.");
+        if (this._originalUserId == message.user) {
+            this._bot.reply(message, "I beg thee, please give thy steed time! You are in the queue.");
             return this;
         }
 
@@ -97,11 +97,11 @@ class UserNeedsCoffeeState {
         // Also slack doesn't like lots of fast API calls.
 
         // Get info about the original user
-        const originalUserResp = await this.bot.api.users.info({ user: this.originalUserId });
+        const originalUserResp = await this._bot.api.users.info({ user: this._originalUserId });
 
         ////////////////
         // Message the recently requesting user
-        this.bot.reply(
+        this._bot.reply(
             message,
             `Caffeine be upon you. You are paired with @${originalUserResp.user.name}! Go and burst forth enlightening conversation.`
         );
@@ -110,13 +110,13 @@ class UserNeedsCoffeeState {
         // Message the original user
 
         // Get Catbot's IM with the original user
-        const imListing = await this.bot.api.im.list({});
-        const originalUserIm = imListing.ims.find(im => im.user == this.originalUserId);
+        const imListing = await this._bot.api.im.list({});
+        const originalUserIm = imListing.ims.find(im => im.user == this._originalUserId);
 
         // Get info about the latest user
-        const latestUserResp = await this.bot.api.users.info({ user: message.user })
+        const latestUserResp = await this._bot.api.users.info({ user: message.user })
 
-        await this.bot.api.chat.postMessage(
+        await this._bot.api.chat.postMessage(
             {
                 as_user: true,
                 channel: originalUserIm.id,
@@ -124,14 +124,14 @@ class UserNeedsCoffeeState {
             },
         );
 
-        await this.bot.api.chat.postMessage(
+        await this._bot.api.chat.postMessage(
             {
                 as_user: true,
-                channel: this.coffeeChannelId,
+                channel: this._coffeeChannelId,
                 text: `@${originalUserResp.user.name} and @${latestUserResp.user.name} are getting coffee together!`
             },
         );
 
-        return new EmptyCoffeeState(this.coffeeChannelId, this.bot);
+        return new EmptyCoffeeState(this._coffeeChannelId, this._bot);
     }
 }

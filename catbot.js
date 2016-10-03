@@ -69,7 +69,7 @@ const bot = controller.spawn({
 
 const coffeeManager = new CoffeeManager(new PromiseBot(bot));
 
-const EACH_DAY_AT_MIDNIGHT = '0 0 * * *'
+const EACH_DAY_AT_MIDNIGHT = '0 0 * * *';
 
 schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     console.log('Commence poop reset');

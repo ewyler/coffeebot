@@ -68,9 +68,11 @@ class FreeCoffeeCountdown {
     }
 
     pickMessage(defaultMessage, freeMessage) {
-        return this._freeCoffeeCountdown == 0
-            ? [FREE_BOOKEND, freeMessage, FREE_BOOKEND].join(' ')
-            : defaultMessage;
+        return defaultMessage;
+        // Temporarily disable
+        //return this._freeCoffeeCountdown == 0
+            //? [FREE_BOOKEND, freeMessage, FREE_BOOKEND].join(' ')
+            //: defaultMessage;
     }
 
     recordCoffeeMatch() {

@@ -81,10 +81,10 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     coffeeManager.reset();
 });
 
-const EVERY_3_MINUTES = '*/3 * * * *';
+const EVERY_MINUTE = '*/1 * * * *';
 const REPOS = ['hn-core', 'hn-webpack', 'hn-nerd-experience', 'hn-enterprise-portal', 'hn-marketing-sales'];
 
-schedule.scheduleJob(EVERY_3_MINUTES, function() {
+schedule.scheduleJob(EVERY_MINUTE, function() {
     console.log('Auto-pooping');
     for (const repo of REPOS) {
         autoMerger.mergeApprovedPullRequests(repo);

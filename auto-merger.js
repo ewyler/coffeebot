@@ -86,7 +86,7 @@ module.exports = class {
                                                         console.log('deleted branch', data, `https://api.github.com/repos/catalant/${repo}/git/refs/heads/${ref}`);
                                                     });
                                                 }
-                                                console.log(`Couldn't merge: `, res);
+                                                console.log(`Couldn't merge: `, data);
                                             }
                                         );
                                     }

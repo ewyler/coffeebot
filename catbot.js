@@ -82,7 +82,7 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
 });
 
 const EVERY_15_SECONDS = '*/15 * * * * *';
-const REPOS = ['hn-core', 'hn-webpack', 'hn-nerd-experience', 'hn-enterprise-portal', 'hn-marketing-sales'];
+const REPOS = ['hn-admin', 'hn-core', 'hn-webpack', 'hn-nerd-experience', 'hn-enterprise-portal', 'hn-marketing-sales'];
 
 schedule.scheduleJob(EVERY_15_SECONDS, function() {
     console.log('Auto-pooping');

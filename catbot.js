@@ -5,10 +5,12 @@
 require('babel-polyfill');
 
 const Botkit = require('botkit');
-const CoffeeManager = require('./coffee/coffee-manager.js');
 const express = require('express')
 const schedule = require('node-schedule')
 const promisify = require('promisify-node')
+
+const AutoMerger = require('./auto-merger.js');
+const CoffeeManager = require('./coffee-manager.js');
 
 ///////////// App setup
 // Bullshit way to make this work because Procfile only works with web roles,
@@ -68,6 +70,9 @@ const bot = controller.spawn({
 }).startRTM();
 
 const coffeeManager = new CoffeeManager(new PromiseBot(bot));
+const autoMerger = new AutoMerger(process.env.GITHUB_USERNAME, process.env.GITHUB_PASSWORD);
+
+///////////// Scheduled stuff
 
 const EACH_DAY_AT_MIDNIGHT = '0 0 * * *';
 
@@ -75,6 +80,18 @@ schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
     console.log('Commence poop reset');
     coffeeManager.reset();
 });
+
+const EVERY_3_MINUTES = '*/3 * * * *';
+const REPOS = ['hn-core', 'hn-webpack', 'hn-nerd-experience', 'hn-enterprise-portal', 'hn-marketing-sales'];
+
+schedule.scheduleJob(EVERY_3_MINUTES, function() {
+    console.log('Auto-pooping');
+    for (const repo of REPOS) {
+        autoMerger.mergeApprovedPullRequests(repo);
+    }
+});
+
+///////////// Bot listening commands
 
 controller.hears(
     ['coffee'],

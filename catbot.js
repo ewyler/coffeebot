@@ -89,22 +89,6 @@ controller.hears(
 );
 
 controller.hears(
-    ['what do you think of rick'],
-    'direct_message,direct_mention,mention',
-    async (bot, message) => {
-        bot.reply(message, ":parrot: definitely a butt :parrot:")
-    }
-);
-
-controller.hears(
-    ['what do you think of rick'],
-    'direct_message,direct_mention,mention',
-    async (bot, message) => {
-        bot.reply(message, ":parrot: definitely a butt :parrot:")
-    }
-);
-
-controller.hears(
     ['will do it'],
     'direct_message,direct_mention,mention',
     async (bot, message) => {

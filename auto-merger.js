@@ -81,9 +81,9 @@ module.exports = class {
                                                     needle.post(`https://api.github.com/repos/catalant/${repo}/issues/${number}/comments`,
                                                     { body: '☃ magicmerge by dogalant ☃' }, this.opts);
 
-                                                    needle.delete(`https://api.github.com/repos/catalant/${repo}/git/refs/heads/${ref}`, this.opts, (err, res, data) => {
+                                                    needle.delete(`https://api.github.com/repos/catalant/${repo}/git/refs/heads/${ref}`, null, this.opts, (err, res, data) => {
                                                         check(err);
-                                                        console.log('deleted branch', data, `https://api.github.com/repos/catalant/${repo}/git/refs/heads/${ref}`);
+                                                        console.log('deleted branch', ref);
                                                     });
                                                 }
                                                 console.log(`Couldn't merge: `, data);

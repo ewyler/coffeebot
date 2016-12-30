@@ -101,6 +101,7 @@ const MS_PER_SECOND = 1000;
         org: 'Catalant',
         interval: 15 * MS_PER_SECOND,
         repos: [
+            'data-api',
             'hn-admin',
             'hn-core',
             'hn-webpack',

@@ -5,32 +5,32 @@
 require('babel-polyfill');
 
 const Botkit = require('botkit');
-const express = require('express')
-const schedule = require('node-schedule')
-const promisify = require('promisify-node')
+const express = require('express');
+const schedule = require('node-schedule');
+const promisify = require('promisify-node');
 
-const AutoMerger = require('./auto-merger.js');
 const CoffeeManager = require('./coffee-manager.js');
+const MagicMerge = require('magic-merge-plz/dist/magic-merge').default;
 
 ///////////// App setup
 // Bullshit way to make this work because Procfile only works with web roles,
 // so there is no way to specify a non-web role. As such, we have to create
 // something to listen to port 5000 or else heroku will kill the app after 60 seconds.
 
-const app = express()
+const app = express();
 
-app.set('port', (process.env.PORT || 5000))
-app.use(express.static(__dirname + '/public'))
+app.set('port', (process.env.PORT || 5000));
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(request, response) {
-    response.send('Hello World!')
-})
+    response.send('Hello World!');
+});
 
 app.listen(app.get('port'), function() {
-    console.log("Node app is running at localhost:" + app.get('port'))
-})
+    console.log("Node app is running at localhost:" + app.get('port'));
+});
 
-///////////// Promisified bot things
+///////////// Botpoop
 
 class PromiseBot {
     constructor(bot) {
@@ -59,8 +59,6 @@ class PromiseBot {
     }
 }
 
-///////////// Real cod
-
 const controller = Botkit.slackbot({
     debug: false
 });
@@ -69,41 +67,78 @@ const bot = controller.spawn({
     token: process.env.SLACK_TOKEN
 }).startRTM();
 
-const coffeeManager = new CoffeeManager(new PromiseBot(bot));
-const autoMerger = new AutoMerger(process.env.GITHUB_USERNAME, process.env.GITHUB_PASSWORD);
+///////////// Coffee
 
-///////////// Scheduled stuff
+(() => {
+    const coffeeManager = new CoffeeManager(new PromiseBot(bot));
 
-const EACH_DAY_AT_MIDNIGHT = '0 0 * * *';
+    const EACH_DAY_AT_MIDNIGHT = '0 0 * * *';
 
-schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
-    console.log('Commence poop reset');
-    coffeeManager.reset();
-});
+    schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
+        console.log('Commence poop reset');
+        coffeeManager.reset();
+    });
 
-const EVERY_15_SECONDS = '*/15 * * * * *';
-const REPOS = ['hn-admin', 'hn-core', 'hn-webpack', 'hn-nerd-experience', 'hn-enterprise-portal', 'hn-marketing-sales'];
-
-schedule.scheduleJob(EVERY_15_SECONDS, function() {
-    console.log('Auto-pooping');
-    for (const repo of REPOS) {
-        autoMerger.mergeApprovedPullRequests(repo);
-    }
-});
-
-///////////// Bot listening commands
-
-controller.hears(
-    ['coffee'],
-    'direct_message,direct_mention,mention',
-    async (bot, message) => {
-        try {
-            await coffeeManager.processCoffeeMessage(message);
-        } catch (err) {
-            console.error(err);
+    controller.hears(
+        ['coffee'],
+        'direct_message,direct_mention,mention',
+        async (bot, message) => {
+            try {
+                await coffeeManager.processCoffeeMessage(message);
+            } catch (err) {
+                console.error(err);
+            }
         }
-    }
-);
+    );
+})();
+
+///////////// Magic merge
+
+const MS_PER_SECOND = 1000;
+
+(() => {
+    const magic = new MagicMerge({
+        org: 'Catalant',
+        interval: 15 * MS_PER_SECOND,
+        repos: [
+            'hn-admin',
+            'hn-core',
+            'hn-webpack',
+            'hn-nerd-experience',
+            'hn-enterprise-portal',
+            'hn-marketing-sales',
+            'hn-marketing-public',
+            'magic-merge-plz'
+        ],
+        label: 'a magic merge plz',
+        stalePrDays: 0,
+        username: process.env.GITHUB_USERNAME,
+        auth: {
+            token: process.env.GITHUB_TOKEN
+        }
+    });
+
+    magic.start();
+
+    magic.on('debug', (msg) => {
+        console.log('magic-merge:', msg);
+    });
+
+    magic.on('warning', (msg) => {
+        console.log('magic-merge WARN:', msg);
+    });
+
+    magic.on('merged', (pr, repo) => {
+        console.log('MERGED!', repo, pr.number);
+    });
+
+    magic.on('stale', (pr, repo) => {
+        console.log('stale pr', pr, repo);
+    });
+
+})();
+
+///////////// Random
 
 controller.hears(
     ['will do it'],

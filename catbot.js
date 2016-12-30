@@ -109,7 +109,8 @@ const MS_PER_SECOND = 1000;
             'hn-enterprise-portal',
             'hn-marketing-sales',
             'hn-marketing-public',
-            'magic-merge-plz'
+            'magic-merge-plz',
+            'main-app'
         ],
         label: 'a magic merge plz',
         stalePrDays: 0,

@@ -11,7 +11,7 @@
     "babel-preset-es2017": "6.16.0",
     "botkit": "0.2.2",
     "express": "4.14.0",
-    "magic-merge-plz": "0.2.1",
+    "magic-merge-plz": "^0.2.3",
     "node-schedule": "1.1.1",
     "promisify-node": "0.4.0"
   },

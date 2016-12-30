@@ -99,7 +99,7 @@ const MS_PER_SECOND = 1000;
 (() => {
     const magic = new MagicMerge({
         org: 'Catalant',
-        interval: 15 * MS_PER_SECOND,
+        interval: 60 * MS_PER_SECOND,
         repos: [
             'data-api',
             'hn-admin',

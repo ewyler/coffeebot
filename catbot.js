@@ -94,12 +94,9 @@ const bot = controller.spawn({
 
 ///////////// Magic merge
 
-const MS_PER_SECOND = 1000;
-
 (() => {
     const magic = new MagicMerge({
         org: 'Catalant',
-        interval: 60 * MS_PER_SECOND,
         repos: [
             'data-api',
             'hn-admin',
@@ -132,11 +129,11 @@ const MS_PER_SECOND = 1000;
     });
 
     magic.on('merged', (pr, repo) => {
-        console.log('MERGED!', repo, pr.number);
+        // console.log('MERGED!', repo, pr.number);
     });
 
     magic.on('stale', (pr, repo) => {
-        console.log('stale pr', pr, repo);
+        // console.log('stale pr', pr, repo);
     });
 
 })();

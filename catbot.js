@@ -109,6 +109,7 @@ const MS_PER_SECOND = 1000;
             'hn-enterprise-portal',
             'hn-marketing-sales',
             'hn-marketing-public',
+            'hn-seahorse',
             'magic-merge-plz',
             'main-app'
         ],

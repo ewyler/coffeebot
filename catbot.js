@@ -122,18 +122,15 @@ const bot = controller.spawn({
 
     magic.on('debug', (msg) => {
         console.log('magic-merge:', msg);
-    });
-
-    magic.on('warning', (msg) => {
+    }).on('warning', (msg) => {
         console.log('magic-merge WARN:', msg);
-    });
-
-    magic.on('merged', (pr, repo) => {
+    }).on('merged', (pr, repo) => {
         // console.log('MERGED!', repo, pr.number);
-    });
-
-    magic.on('stale', (pr, repo) => {
+    }).on('stale', (pr, repo) => {
         // console.log('stale pr', pr, repo);
+    }).on('throttle', (nextRequestTimeoutSeconds, remainingRequests, resetMins) => {
+        // remove when this gets too annoying:
+        console.log(`throttle: request timeout seconds: [${nextRequestTimeoutSeconds}] remaining requests: [${remainingRequests}] rate reset in minutes: [${resetMins}]`);
     });
 
 })();

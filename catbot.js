@@ -112,6 +112,7 @@ const bot = controller.spawn({
         ],
         label: 'a magic merge plz',
         stalePrDays: 0,
+        interval: 1000 * 20,
         username: process.env.GITHUB_USERNAME,
         auth: {
             token: process.env.GITHUB_TOKEN

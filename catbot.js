@@ -129,11 +129,9 @@ const bot = controller.spawn({
         // console.log('MERGED!', repo, pr.number);
     }).on('stale', (pr, repo) => {
         // console.log('stale pr', pr, repo);
-    }).on('throttle', (nextRequestTimeoutSeconds, remainingRequests, resetMins) => {
-        // remove when this gets too annoying:
-        console.log(`throttle: request timeout seconds: [${nextRequestTimeoutSeconds}] remaining requests: [${remainingRequests}] rate reset in minutes: [${resetMins}]`);
+    }).on('rate-limit', (remainingRequests, minutesUntilReset, queuedRequests) => {
+        console.log(`magic-merge - remaining requests: [${remainingRequests}] rate reset in minutes: [${minutesUntilReset.toFixed(2)}] queued requests: ${queuedRequests}`);
     });
-
 })();
 
 ///////////// Random

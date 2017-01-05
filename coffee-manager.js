@@ -4,7 +4,16 @@ require('babel-polyfill');
 
 const FREE_COFFEE = ':coffee: :coffee: :coffee: :coffee: :coffee:'
 
-const EXCLUDED_DAILY_FREE_PAIRING_MEMBERS = new Set(['slackbot', 'polly', 'catbot', 'wally']);
+const EXCLUDED_DAILY_FREE_PAIRING_MEMBERS = new Set([
+    'catbot',
+    'growbot',
+    'guru',
+    'polly',
+    'quip',
+    'slackbot',
+    'troops'
+    'wally',
+]);
 
 // Move this to some common core/util area
 const once = (target, meth, pd) => {

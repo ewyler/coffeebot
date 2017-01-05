@@ -78,6 +78,8 @@ const bot = controller.spawn({
     const EACH_DAY_AT_MIDNIGHT = '0 5 * * *';
     const EACH_WEEKDAY_AT_10AM = '0 15 * * 1-5';
 
+    coffeeManager.assignRandomCoffeePairing();
+
     schedule.scheduleJob(EACH_WEEKDAY_AT_10AM, function() {
         console.log('Pooping out daily random coffee');
         coffeeManager.assignRandomCoffeePairing();

@@ -49,7 +49,8 @@ class PromiseBot {
                 list: promisify(this.bot.api.im.list)
             },
             users: {
-                info: promisify(this.bot.api.users.info)
+                info: promisify(this.bot.api.users.info),
+                list: promisify(this.bot.api.users.list)
             }
         }
     }
@@ -72,7 +73,15 @@ const bot = controller.spawn({
 (() => {
     const coffeeManager = new CoffeeManager(new PromiseBot(bot));
 
-    const EACH_DAY_AT_MIDNIGHT = '0 0 * * *';
+    // This is all UTC right now, so make it right for EST. Will be off an hour
+    // during DST unless this is updated, but whatever.
+    const EACH_DAY_AT_MIDNIGHT = '0 5 * * *';
+    const EACH_WEEKDAY_AT_10AM = '0 15 * * 1-5';
+
+    schedule.scheduleJob(EACH_WEEKDAY_AT_10AM, function() {
+        console.log('Pooping out daily random coffee');
+        coffeeManager.assignRandomCoffeePairing();
+    });
 
     schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
         console.log('Commence poop reset');

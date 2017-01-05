@@ -11,8 +11,8 @@ const EXCLUDED_DAILY_FREE_PAIRING_MEMBERS = new Set([
     'polly',
     'quip',
     'slackbot',
-    'troops'
-    'wally',
+    'troops',
+    'wally'
 ]);
 
 // Move this to some common core/util area

@@ -73,9 +73,7 @@ module.exports = class {
     async assignRandomCoffeePairing() {
         const resp = await this._bot.api.users.list({});
 
-        const memberList = resp.members.filter(
-            member => !EXCLUDED_DAILY_FREE_PAIRING_MEMBERS.has(member.name)
-        );
+        const memberList = resp.members.filter(member => !member.is_bot && !member.deleted);
 
         const userA = memberList[this._getRandomIntInclusive(0, memberList.length - 1)].name;
 

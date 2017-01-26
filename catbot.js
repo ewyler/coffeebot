@@ -121,25 +121,34 @@ const bot = controller.spawn({
         ],
         label: 'a magic merge plz',
         stalePrDays: 0,
-        interval: 1000 * 20,
         username: process.env.GITHUB_USERNAME,
         auth: {
             token: process.env.GITHUB_TOKEN
+        },
+        jira: {
+            auth: {
+                username: process.env.JIRA_USERNAME,
+                password: process.env.JIRA_PASSWORD
+            },
+            host: 'gocatalant.atlassian.net'
         }
     });
 
     magic.start();
 
     magic.on('debug', (msg) => {
-        console.log('magic-merge:', msg);
+   //     console.log('magic-merge:', msg);
     }).on('warning', (msg) => {
         console.log('magic-merge WARN:', msg);
+    }).on('error', (msg) => {
+        console.log('magic-merge ERROR:', msg);
     }).on('merged', (pr, repo) => {
         // console.log('MERGED!', repo, pr.number);
     }).on('stale', (pr, repo) => {
         // console.log('stale pr', pr, repo);
-    }).on('rate-limit', (remainingRequests, minutesUntilReset, queuedRequests) => {
-        console.log(`magic-merge - remaining requests: [${remainingRequests}] rate reset in minutes: [${minutesUntilReset.toFixed(2)}] queued requests: ${queuedRequests}`);
+    }).on('throttle', (nextRequestTimeoutSeconds, remainingRequests, resetMins) => {
+        // remove when this gets too annoying:
+        // console.log(`throttle: request timeout seconds: [${nextRequestTimeoutSeconds}] remaining requests: [${remainingRequests}] rate reset in minutes: [${resetMins}]`);
     });
 })();
 

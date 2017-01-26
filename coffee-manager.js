@@ -2,7 +2,7 @@
 
 require('babel-polyfill');
 
-const FREE_BOOKEND = ':coffee: :coffee: :coffee: :coffee: :coffee:'
+const FREE_COFFEE = ':coffee: :coffee: :coffee: :coffee: :coffee:'
 
 // Move this to some common core/util area
 const once = (target, meth, pd) => {
@@ -50,6 +50,44 @@ module.exports = class {
         return this._currentState;
     }
 
+    // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    // Returns a random integer between min (included) and max (included)
+    // Using Math.round() will give you a non-uniform distribution!
+    _getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    async assignRandomCoffeePairing() {
+        const resp = await this._bot.api.users.list({});
+
+        const memberList = resp.members.filter(member => !member.is_bot && !member.deleted);
+
+        const userA = memberList[this._getRandomIntInclusive(0, memberList.length - 1)].name;
+
+        // We could randomly select the same user as the first - so do it a few times as needed.
+        let userB = userA;
+        while (userB === userA) {
+            userB = memberList[this._getRandomIntInclusive(0, memberList.length - 1)].name;
+        }
+
+        console.log(`${userA} and ${userB} paired for the daily free coffee!`);
+
+        const coffeeChannelId = await this._getCoffeeChannelId();
+
+        this._bot.api.chat.postMessage(
+            {
+                as_user: true,
+                channel: coffeeChannelId,
+                link_names: 1,
+                text: `${FREE_COFFEE} @${userA} and @${userB}, you've been randomly selected for the daily free coffee!` +
+                    ` Go and burst forth enlightening conversation. You can get the coffee` +
+                    ` gift card from John Nylen's desk.`
+            },
+        );
+    }
+
     async processCoffeeMessage(message) {
         await this._getCurrentState();
         this._currentState = await this._currentState.processCoffeeMessage(message);
@@ -71,7 +109,7 @@ class FreeCoffeeCountdown {
         return defaultMessage;
         // Temporarily disable
         //return this._freeCoffeeCountdown == 0
-            //? [FREE_BOOKEND, freeMessage, FREE_BOOKEND].join(' ')
+            //? [FREE_COFFEE, freeMessage, FREE_COFFEE].join(' ')
             //: defaultMessage;
     }
 

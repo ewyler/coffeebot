@@ -17,10 +17,15 @@
   },
   "scripts": {
     "build": "babel *.js */*.js -d lib",
+
     "local": "heroku ps:scale web=0 --app desolate-everglades-35136; heroku local",
     "start": "npm run build; node lib/catbot.js",
+
     "deploy-production": "git push -f production master; heroku logs --remote production --tail",
-    "deploy-staging": "heroku ps:scale web=1 --app desolate-everglades-35136; git push -f staging master; heroku logs --remote staging --tail"
+    "deploy-staging": "heroku ps:scale web=1 --app desolate-everglades-35136; git push -f staging master; heroku logs --remote staging --tail",
+
+    "kill-production": "heroku ps:scale web=0 --remote production",
+    "restore-production": "heroku ps:scale web=1 --remote production"
   },
   "author": "Eric Wyler <ewyler@gmail.com>",
   "license": "ISC"

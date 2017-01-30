@@ -10,20 +10,18 @@ const schedule = require('node-schedule');
 const promisify = require('promisify-node');
 
 const CoffeeManager = require('./coffee-manager.js');
+const JiraInflowOutflowGenerator = require('jira-inflow-outflow-generator');
 const MagicMerge = require('magic-merge-plz/dist/magic-merge').default;
 
 ///////////// App setup
-// Bullshit way to make this work because Procfile only works with web roles,
-// so there is no way to specify a non-web role. As such, we have to create
-// something to listen to port 5000 or else heroku will kill the app after 60 seconds.
 
 const app = express();
 
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(request, response) {
-    response.send('Hello World!');
+app.get('/', function(req, res) {
+    res.send('Poop');
 });
 
 app.listen(app.get('port'), function() {
@@ -99,6 +97,35 @@ const bot = controller.spawn({
             }
         }
     );
+})();
+
+///////////// Jira inflow/outflow
+
+(() => {
+    const DAYS_AGO = 30;
+
+    const flowGenerator = new JiraInflowOutflowGenerator({
+        protocol: 'https',
+        host: 'gocatalant.atlassian.net',
+        username: process.env.JIRA_USERNAME,
+        password: process.env.JIRA_PASSWORD,
+        apiVersion: '2',
+        strictSSL: true
+    });
+
+    app.get('/bugs', (req, res) => {
+
+        flowGenerator.renderPage(
+            'Bug inflow/outflow for CAT project',
+            DAYS_AGO,
+            `issuetype = Bug AND project = 'CAT'`,
+            `issuetype = Bug AND project = 'CAT' and status = Closed`
+        ).then(renderedPage => {
+            res.send(renderedPage);
+        });
+
+    });
+
 })();
 
 ///////////// Magic merge

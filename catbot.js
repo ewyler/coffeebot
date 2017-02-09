@@ -134,6 +134,7 @@ const bot = controller.spawn({
     const magic = new MagicMerge({
         org: 'Catalant',
         repos: [
+            'catalant',
             'data-api',
             'hn-admin',
             'hn-core',

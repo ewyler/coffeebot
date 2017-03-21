@@ -92,7 +92,8 @@ module.exports = class {
                 {
                     as_user: true,
                     channel: `@${ user }`,
-                    text: `Congrats! You've been paired with @${ otherUser } for free coffee!`
+                    text: `Congrats! You've been paired with @${ otherUser } for free coffee! Join the #coffee channel for more info.` +
+                        ` The caffeinated bunch there will help you out.`
                 }
             );
         };

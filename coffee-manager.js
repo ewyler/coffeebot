@@ -86,6 +86,19 @@ module.exports = class {
                     ` gift card from John Nylen's desk.`
             },
         );
+
+        const sendMessage = (user, otherUser) => {
+            this._bot.api.chat.postMessage(
+                {
+                    as_user: true,
+                    channel: `@${ user }`,
+                    text: `Congrats! You've been paired with @${ otherUser } for free coffee!`
+                }
+            );
+        };
+
+        sendMessage(userA, userB);
+        sendMessage(userB, userA);
     }
 
     async processCoffeeMessage(message) {

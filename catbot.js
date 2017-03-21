@@ -81,6 +81,18 @@ const bot = controller.spawn({
         coffeeManager.assignRandomCoffeePairing();
     });
 
+    controller.hears(
+        ['do it, super secretly'],
+        'direct_message,direct_mention,mention',
+        async (bot, message) => {
+            try {
+                coffeeManager.assignRandomCoffeePairing();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    );
+
     schedule.scheduleJob(EACH_DAY_AT_MIDNIGHT, function() {
         console.log('Commence poop reset');
         coffeeManager.reset();
@@ -181,6 +193,14 @@ const bot = controller.spawn({
 })();
 
 ///////////// Random
+
+controller.hears(
+    ["It’s erin!"],
+    'direct_message,direct_mention,mention',
+    async (bot, message) => {
+        bot.reply(message, "hi there")
+    }
+);
 
 controller.hears(
     ['will do it'],

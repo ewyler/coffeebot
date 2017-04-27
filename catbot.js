@@ -10,8 +10,6 @@ const schedule = require('node-schedule');
 const promisify = require('promisify-node');
 
 const CoffeeManager = require('./coffee-manager.js');
-const JiraInflowOutflowGenerator = require('jira-inflow-outflow-generator');
-const MagicMerge = require('magic-merge-plz/dist/magic-merge').default;
 
 ///////////// App setup
 
@@ -110,97 +108,6 @@ const bot = controller.spawn({
         }
     );
 })();
-
-///////////// Jira inflow/outflow
-
-(() => {
-    const DAYS_AGO = 30;
-
-    const flowGenerator = new JiraInflowOutflowGenerator({
-        protocol: 'https',
-        host: 'gocatalant.atlassian.net',
-        username: process.env.JIRA_USERNAME,
-        password: process.env.JIRA_PASSWORD,
-        apiVersion: '2',
-        strictSSL: true
-    });
-
-    app.get('/bugs', (req, res) => {
-
-        flowGenerator.renderPage(
-            'Bug inflow/outflow for CAT project',
-            DAYS_AGO,
-            `issuetype = Bug AND project = 'CAT'`,
-            `issuetype = Bug AND project = 'CAT' and status = Closed`
-        ).then(renderedPage => {
-            res.send(renderedPage);
-        });
-
-    });
-
-})();
-
-///////////// Magic merge
-
-(() => {
-    const magic = new MagicMerge({
-        org: 'Catalant',
-        repos: [
-            'catalant',
-            'data-api',
-            'hn-admin',
-            'hn-core',
-            'hn-webpack',
-            'hn-nerd-experience',
-            'hn-enterprise-portal',
-            'hn-marketing-sales',
-            'hn-marketing-public',
-            'hn-seahorse',
-            'magic-merge-plz',
-            'main-app'
-        ],
-        label: 'a magic merge plz',
-        stalePrDays: 0,
-        username: process.env.GITHUB_USERNAME,
-        auth: {
-            token: process.env.GITHUB_TOKEN
-        },
-        jira: {
-            auth: {
-                username: process.env.JIRA_USERNAME,
-                password: process.env.JIRA_PASSWORD
-            },
-            host: 'gocatalant.atlassian.net'
-        }
-    });
-
-    magic.start();
-
-    magic.on('debug', (msg) => {
-   //     console.log('magic-merge:', msg);
-    }).on('warning', (msg) => {
-        console.log('magic-merge WARN:', msg);
-    }).on('error', (msg) => {
-        console.log('magic-merge ERROR:', msg);
-    }).on('merged', (pr, repo) => {
-        // console.log('MERGED!', repo, pr.number);
-    }).on('stale', (pr, repo) => {
-        // console.log('stale pr', pr, repo);
-    }).on('throttle', (nextRequestTimeoutSeconds, remainingRequests, resetMins) => {
-        // remove when this gets too annoying:
-        // console.log(`throttle: request timeout seconds: [${nextRequestTimeoutSeconds}] remaining requests: [${remainingRequests}] rate reset in minutes: [${resetMins}]`);
-    });
-})();
-
-///////////// Random
-
-controller.hears(
-    ["It’s erin!"],
-    'direct_message,direct_mention,mention',
-    async (bot, message) => {
-        bot.reply(message, "hi there")
-    }
-);
 
 controller.hears(
     ['will do it'],

@@ -11,8 +11,6 @@
     "babel-preset-es2017": "6.16.0",
     "botkit": "0.2.2",
     "express": "4.14.0",
-    "jira-inflow-outflow-generator": "0.0.7",
-    "magic-merge-plz": "0.6.2",
     "node-schedule": "1.1.1",
     "promisify-node": "0.4.0"
   },
@@ -24,7 +22,7 @@
 
     "deploy-production": "git push -f production master && heroku logs --remote production --tail",
     "deploy-staging": "heroku ps:scale web=1 --app desolate-everglades-35136 && git push -f staging master; heroku logs --remote staging --tail",
-    
+
     "kill-production": "heroku ps:scale web=0 --remote production",
     "restore-production": "heroku ps:scale web=1 --remote production"
   },
